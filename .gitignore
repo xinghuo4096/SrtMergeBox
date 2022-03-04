@@ -127,3 +127,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+tests/test_new_subtitle.srt
+tests/test_unalign_subtitle.srt
