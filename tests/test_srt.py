@@ -40,14 +40,14 @@ def test_load_time():
     test
     '''
     srt_time = ' 00:03:06,520  '
-    t1 = load_time(srt_time)
+    time1 = load_time(srt_time)
 
-    assert isinstance(t1, datetime.datetime)
-    assert t1.hour == 0
-    assert t1.minute == 3
-    assert t1.second == 6
-    assert t1.microsecond == 520 * 1000
-    return t1
+    assert isinstance(time1, datetime.datetime)
+    assert time1.hour == 0
+    assert time1.minute == 3
+    assert time1.second == 6
+    assert time1.microsecond == 520 * 1000
+    return time1
 
 
 def test_time():
@@ -66,23 +66,23 @@ def test_time():
     timestr = format_time(begin_time)
     assert timestr == '0:0:0,0'
 
-    td = datetime.timedelta(seconds=10, microseconds=1000)
-    now_time += td
+    td1 = datetime.timedelta(seconds=10, microseconds=1000)
+    now_time += td1
     temp = datetime.datetime.strptime('1900-01-01 00:00:10.001000',
                                       '%Y-%m-%d %H:%M:%S.%f')
     assert now_time == temp
 
-    ss = now_time - begin_time
+    ss1 = now_time - begin_time
     temp = 10.001
-    assert ss.total_seconds() == temp
+    assert ss1.total_seconds() == temp
 
 
 def main():
-    '''   
+    '''
 
     main
     '''
-    pass
+    test_time()
 
 
 if __name__ == '__main__':

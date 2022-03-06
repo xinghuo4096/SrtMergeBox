@@ -6,7 +6,7 @@ import datetime
 import re
 
 import chardet
-
+#TODO 修改默认文件名称。
 
 class Srt:
     '''
