@@ -1,14 +1,18 @@
+'''
+测试
+
+'''
 import datetime
-from urllib.parse import quote
 from urllib.request import urlopen
-from Srt import Srt, detect_code, load_srt_fromfile, load_time, format_time, merge_to_srt, merge_srt_tofile
+from Srt import Srt, detect_code, load_srt_fromfile, load_time, format_time
 
 
 def test_load_srt():
+    '''
+    test
 
-    texts = []
-
-    subs = load_srt_fromfile('tests/test_srt1.srt')
+    '''
+    subs = load_srt_fromfile('indata/test_srt1.srt')
 
     assert len(subs) == 10
     item = subs[-1]
@@ -18,6 +22,9 @@ def test_load_srt():
 
 
 def test_detect():
+    '''
+    _test
+    '''
     rawdata = urlopen('http://m.baidu.com/').read()
     ret = detect_code(rawdata)
     str1 = ret[0]
@@ -29,6 +36,9 @@ def test_detect():
 
 
 def test_load_time():
+    '''
+    test
+    '''
     srt_time = ' 00:03:06,520  '
     t1 = load_time(srt_time)
 
@@ -41,6 +51,9 @@ def test_load_time():
 
 
 def test_time():
+    '''
+    test
+    '''
     begin_time = datetime.datetime.strptime('0', '%S')
     now_time = datetime.datetime.strptime('0', '%S')
 
@@ -65,6 +78,10 @@ def test_time():
 
 
 def main():
+    '''   
+
+    main
+    '''
     pass
 
 

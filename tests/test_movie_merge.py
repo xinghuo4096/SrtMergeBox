@@ -1,18 +1,19 @@
 from ast import match_case
 import datetime
-from Srt import Srt, detect_code, load_srt_fromfile, merge_to_srt, merge_srt_tofile
+from Srt import Srt, detect_code, load_srt_fromfile, merge_ass_tofile, merge_srt_tostr, merge_srt_tofile, merge_to_ass_str
 
 
 def test_merge_subtitle():
-    newsub, unalignsub = merge_to_srt('tests/test_cn.srt', 'tests/test_en.srt')
+    newsub, unalignsub = merge_srt_tostr('indata/test_cn.srt',
+                                         'indata/test_en.srt')
     assert len(newsub) > 0
     assert len(unalignsub) > 0
     assert len(newsub) == 1165
     assert len(unalignsub) == 31
 
 
-def test_merge_subtitle_tofile():
-    merge_srt_tofile('tests/test_cn.srt', 'tests/test_en.srt',
+def test_merge_srt_tofile():
+    merge_srt_tofile('indata/test_cn.srt', 'indata/test_en.srt',
                      'outdata/test_new_subtitle.srt',
                      'outdata/test_unalign_subtitle.srt')
     import os
@@ -22,68 +23,39 @@ def test_merge_subtitle_tofile():
 
 def test_merge_ass_tofile():
 
-    ass_template = 'tests/test_ass_template_cn_en.txt'
-    f1 = open(ass_template, 'rb')
-    str1 = f1.read()
-    f1.close()
+    import os
+    file1 = 'outdata/test_new.ass'
+    file2 = 'outdata/test_ass_unalign.txt'
 
-    str1 = detect_code(str1)[0]
-    assert isinstance(str1, str)
+    file3 = 'outdata/test_new2.ass'
+    file4 = 'outdata/test_ass_unalign2.txt'
 
-    str1 = str1.replace('\r', '')
+    if os.path.isfile(file1):
+        os.remove(file1)
+    if os.path.isfile(file2):
+        os.remove(file2)
+    if os.path.isfile(file3):
+        os.remove(file3)
+    if os.path.isfile(file4):
+        os.remove(file4)
 
-    ass_info_style = str1[str1.find('[Script Info]'):str1.find('[Events]')]
+    merge_ass_tofile()
 
-    ass_text = str1[str1.find('Dialogue'
-                              ):str1.find('{language2_subtitle_text}') + 25]
+    assert os.path.isfile(file1)
+    assert os.path.isfile(file2)
+    assert not os.path.isfile(file3)
+    assert not os.path.isfile(file4)
 
-    ass_info_style = ass_info_style.replace('{softname}', 'srt mergen box')
-    ass_info_style = ass_info_style.replace('{softurl}', 'xinghuo4096')
-    ass_info_style = ass_info_style.replace('{title}', 'title')
-    ass_info_style = ass_info_style.replace('{Original_file}', 'srt')
-    ass_info_style = ass_info_style.replace('{update_name}', 'npc')
-    ass_info_style = ass_info_style.replace('{update_detial}',
-                                            str(datetime.datetime.now()))
+    merge_ass_tofile(first_subtitle_fname='indata/test_cn.srt', 
+                     second_subtitle_fname='indata/test_en.srt',
+                     new_subtitle_fname=file3, 
+                     unalign_subtitle_fname=file4, 
+                     mark1='', mark2='')
 
-    srts = load_srt_fromfile('tests/test_cn.srt')
-    texts = []
-    text = ''
-    for item in srts:
-        assert isinstance(item, Srt)
-        text = ass_text
-
-        text = text.replace('{start_time}',
-                            format_subtitle_ass(item.start_time))
-        text = text.replace('{end_time}', format_subtitle_ass(item.end_time))
-        languages=item.text.split('\n')
-        match len(languages):
-            case 1:
-                text = text.replace('{language1_subtitle_text}', languages[0])
-                text = text[:text.find(r'\N{\fn')]
-            case 2:
-                text = text.replace('{language1_subtitle_text}', languages[0])
-                text = text.replace('{language2_subtitle_text}', languages[1])   
-            case _:
-                text = text.replace('{language1_subtitle_text}', languages[:-1])
-                text = text.replace('{language2_subtitle_text}', ''.joing(languages[-1]))   
- 
-            
-        
-        texts.append(text)
-    ass = ass_info_style + '\n'.join(texts)
-
-    savesrt = ass
-    fname = 'outdata/test.txt'
-    f1 = open(fname, 'w', 1000, 'utf-8')
-    f1.write(savesrt)
-    f1.close()
-    print()
-
-
-def format_subtitle_ass(t_time):
-    str.format
-    return '{0:1d}:{1:0>2d}:{2:0>2d}.{3:0>2d}'.format(
-        t_time.hour, t_time.minute, t_time.second, t_time.microsecond // 10000)
+    assert os.path.isfile(file1)
+    assert os.path.isfile(file2)
+    assert os.path.isfile(file3)
+    assert os.path.isfile(file4)
 
 
 # -----------main
