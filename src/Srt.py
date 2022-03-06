@@ -1,4 +1,3 @@
-
 import copy
 import datetime
 import re
@@ -7,8 +6,10 @@ import chardet
 
 class Srt:
     SEPARATOR = '-->'
-    ENCODING = ['utf-32', 'utf-16', 'utf-8',
-                'UTF-8-SIG' 'cp1252', 'gb2312', 'gbk', 'big5']
+    ENCODING = [
+        'utf-32', 'utf-16', 'utf-8', 'UTF-8-SIG'
+        'cp1252', 'gb2312', 'gbk', 'big5'
+    ]
 
     def __init__(self, sub_index, sub_time, sub_text) -> None:
         self.index = int(sub_index)
@@ -17,8 +18,11 @@ class Srt:
         self.text = sub_text
 
     def __str__(self) -> str:
-        temp = '{0}\n{1} {2} {3}\n{4}\n'.format(self.index, format_time(
-            self.start_time), Srt.SEPARATOR, format_time(self.end_time), self.text)
+        temp = '{0}\n{1} {2} {3}\n{4}\n'.format(self.index,
+                                                format_time(self.start_time),
+                                                Srt.SEPARATOR,
+                                                format_time(self.end_time),
+                                                self.text)
         return temp
 
     def _split_time(self, strtime: str):
@@ -34,7 +38,7 @@ def detect_code(detect_str: str) -> tuple:
     if s['confidence'] > 0.9:
         str1 = detect_str.decode(s['encoding'], 'ignore')
     else:
-        raise Exception(detect_str[0:10]+'... error.'+s['confidence'])
+        raise Exception(detect_str[0:10] + '... error.' + s['confidence'])
     return str1, s['encoding']
 
 
@@ -45,8 +49,10 @@ def load_time(srt_time: str) -> datetime.datetime:
 
 
 def format_time(temp_time: datetime.datetime):
-    timestr = '{h}:{m}:{s},{ss}'.format(
-        h=temp_time.hour, m=temp_time.minute, s=temp_time.second, ss=temp_time.microsecond//1000)
+    timestr = '{h}:{m}:{s},{ss}'.format(h=temp_time.hour,
+                                        m=temp_time.minute,
+                                        s=temp_time.second,
+                                        ss=temp_time.microsecond // 1000)
     return timestr
 
 
@@ -61,7 +67,7 @@ def clear_srt(fname, srts, test='-test-'):
 
     savestr = '\n'.join(savelist)
 
-    f1 = open(fname[:-3]+'txt', 'w', 100, 'utf-8')
+    f1 = open(fname[:-3] + 'txt', 'w', 100, 'utf-8')
     f1.write(savestr)
     f1.close()
 
@@ -76,14 +82,60 @@ def load_srt_fromfile(fname):
     return srts
 
 
+def check_srt(str1):
+    '''
+    1. 字符串包含换行。
+    2. 
+
+    _extended_summary_
+
+    Args:
+        str1 (_type_): _description_
+    '''
+    pass
+
+
+def clear_before_srt(str1) -> str:
+    '''
+    1. 清除文件里的回车`\\r`
+    
+    Returns:
+        str: str
+    '''
+    subsrt = str1.replace('\r', '')
+    return subsrt
+
+
+def clear_after_srt(srt: Srt) -> str:
+    '''
+    1.把一个字幕块里的字幕变为一行。
+        比如：
+       ` Dad.`
+                       
+       ` Yeah?`
+            
+        这样的字幕变为 `- Dad. - Yeah?` 
+
+    Args:
+        str1 (_type_): str
+
+    Returns:
+        str: str
+    '''
+    srt.text = srt.text.replace('\n', '-')
+
+
 def load_srt_from_str(str1):
     re_srt_index = re.compile('^\d+$')
-
     subsrt = detect_code(str1)[0]
-    subsrt = subsrt.replace('\r', '')
-    sublines = [x.strip() for x in subsrt.split("\n") if x.strip()]
-    srts = []
 
+    check_srt(subsrt)
+
+    subsrt = clear_before_srt(subsrt)
+
+    sublines = [x.strip() for x in subsrt.split("\n") if x.strip()]
+
+    srts = []
     can_gettext = True
     can_getsrt = True
     line_count = 0
@@ -112,6 +164,9 @@ def load_srt_from_str(str1):
 
         srttext = '\n'.join(textlist)
         s = Srt(srtindex, srttime, srttext)
+
+        clear_after_srt(s)
+
         srts.append(s)
 
     srts.sort(key=by_start_time)
@@ -123,7 +178,10 @@ def by_start_time(elem: Srt):
     return elem.start_time
 
 
-def merge_subtitle(first_subtitle_fname='tests/test_cn.srt', second_subtitle_fname='tests/test_en.srt',  mark1='@@@@@@@-1', mark2='!!!!!!!-2'):
+def merge_to_srt(first_subtitle_fname='tests/test_cn.srt',
+                 second_subtitle_fname='tests/test_en.srt',
+                 mark1='@@@@@@@-1',
+                 mark2='!!!!!!!-2'):
     '''
     返回: 
         新字幕,无法对齐内容
@@ -147,11 +205,13 @@ def merge_subtitle(first_subtitle_fname='tests/test_cn.srt', second_subtitle_fna
 
     for item in first_subtitle:
         assert isinstance(item, Srt)
-        temp = [x for x in second_subtitle if x.start_time ==
-                item.start_time and x.end_time == item.end_time]
+        temp = [
+            x for x in second_subtitle
+            if x.start_time == item.start_time and x.end_time == item.end_time
+        ]
         if temp:
             for m in temp:
-                item.text = item.text+'\n'+m.text
+                item.text = item.text + '\n' + m.text
 
             new_subtitle.append(item)
 
@@ -165,12 +225,12 @@ def merge_subtitle(first_subtitle_fname='tests/test_cn.srt', second_subtitle_fna
 
     unalign_subtitle = []
     for item in first_subtitle:
-        item.text = mark1+item.text
+        item.text = mark1 + item.text
         unalign_subtitle.append(item)
         new_subtitle.append(item)
 
     for item in second_subtitle:
-        item.text = mark2+item.text
+        item.text = mark2 + item.text
         unalign_subtitle.append(item)
         new_subtitle.append(item)
 
@@ -192,7 +252,7 @@ def reidnex(subtitles):
         index_count += 1
 
 
-def save_subtitle(fname, subtitles: list):
+def save_srt(fname, subtitles: list):
     savelist = [str(x) for x in subtitles]
     savesrt = '\n'.join(savelist)
     f1 = open(fname, 'w', 1000, 'utf-8')
@@ -200,8 +260,63 @@ def save_subtitle(fname, subtitles: list):
     f1.close()
 
 
-def merge_subtitle_tofile(first_subtitle_fname='tests/test_cn.srt', second_subtitle_fname='tests/test_en.srt', new_subtitle_fname='tests/test_new.srt', unalign_subtitle_fname='tests/test_unalign.srt', mark1='@@@@@@@-1', mark2='!!!!!!!-2'):
-    new_subtitle, unalign_subtitle = merge_subtitle(
-        first_subtitle_fname, second_subtitle_fname, mark1, mark2)
-    save_subtitle(new_subtitle_fname, new_subtitle)
-    save_subtitle(unalign_subtitle_fname, unalign_subtitle)
+def save_ass(fname, subtitles: list, ass_template: str):
+    '''
+    使用ass模板，将srt输出为ass文件。
+    Args:
+        fname (_type_): 要保存的ass文件名
+        subtitles (list): 字幕list
+        ass_template (str): ass模板
+    '''
+    f1 = open(ass_template, 'rb')
+    str1 = f1.read()
+    f1.close()
+
+    str1 = detect_code(str1)[0]
+    assert isinstance(str1, str1)
+
+    str1 = str1.replace('\r', '')
+    str1.replace('{softname}', 'srt mergen box')
+    str1.replace('{softurl}', 'xinghuo4096')
+    str1.replace('{title}', 'title')
+    str1.replace('{Original_file}', 'srt')
+    str1.replace('{update_name}', 'npc')
+    str1.replace('{update_detial}', str(datetime.datetime.now()))
+
+    asst = str.split['\n']
+
+    for item in subtitles:
+        assert isinstance(item, Srt)
+
+    savelist = [str(x) for x in subtitles]
+    savesrt = '\n'.join(savelist)
+    f1 = open(fname, 'w', 1000, 'utf-8')
+    # f1.write(savesrt)
+    f1.close()
+
+
+def merge_srt_tofile(first_subtitle_fname='tests/test_cn.srt',
+                     second_subtitle_fname='tests/test_en.srt',
+                     new_subtitle_fname='tests/test_new.srt',
+                     unalign_subtitle_fname='tests/test_unalign.srt',
+                     mark1='@@@@@@@-1',
+                     mark2='!!!!!!!-2'):
+    new_subtitle, unalign_subtitle = merge_to_srt(first_subtitle_fname,
+                                                  second_subtitle_fname, mark1,
+                                                  mark2)
+    save_srt(new_subtitle_fname, new_subtitle)
+    save_srt(unalign_subtitle_fname, unalign_subtitle)
+
+
+def merge_ass_tofile(first_subtitle_fname='tests/test_cn.srt',
+                     second_subtitle_fname='tests/test_en.srt',
+                     new_subtitle_fname='tests/test_new.ass',
+                     unalign_subtitle_fname='tests/test_unalign.txt',
+                     ass_template_fname='test/test_ass_template_cn_en.txt',
+                     mark1='@@@@@@@-1',
+                     mark2='!!!!!!!-2'):
+    new_subtitle, unalign_subtitle = merge_to_srt(first_subtitle_fname,
+                                                  second_subtitle_fname, mark1,
+                                                  mark2)
+    save_srt(new_subtitle_fname, new_subtitle)
+    save_srt(unalign_subtitle_fname, unalign_subtitle)

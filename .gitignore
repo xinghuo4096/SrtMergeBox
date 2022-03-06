@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 tests/test_new_subtitle.srt
 tests/test_unalign_subtitle.srt
+outdata/
