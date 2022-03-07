@@ -2,11 +2,11 @@
 
 ## Introduction
 
-Merge 2 subtitles in srt format into srt or ass format subtitles.
+Merge 2 srt format subtitles into srt or ass format subtitles. The purpose is to create dual language subtitles.
 
-Example: Chinese and English subtitles merged into the same srt format subtitle, or one ass format subtitle.
+For example: Chinese subtitles and English subtitles merged into the same srt format subtitle, or one ass format subtitle.
 
-Require srt subtitles in both languages of the same movie.
+The requirement is that the subtitles are in srt format for both languages of the same movie.
 
 ## Use
 
