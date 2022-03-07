@@ -2,8 +2,9 @@
 
 ## Introduction
 
-Used to merge subtitles in srt format corresponding to two languages of the same movie into one srt format file, or one ass format subtitle file.
-For example: Chinese and English subtitles are merged into the same srt format or one ass format subtitle.
+Merge 2 subtitles in srt format into srt or ass format subtitles.
+Example: Chinese and English subtitles merged into the same srt format subtitle, or one ass format subtitle.
+Require srt subtitles in both languages of the same movie.
 
 ## Use
 
