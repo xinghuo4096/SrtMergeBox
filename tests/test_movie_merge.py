@@ -22,11 +22,46 @@ def test_merge_srt_tofile():
     '''
     测试合并到srt
     '''
-    merge_srt_tofile('indata/test_cn.srt', 'indata/test_en.srt',
-                     'outdata/test_merge_srt_tofile.srt',
-                     'outdata/test_merge_srt_tofile.unalign.srt')
-    assert os.path.isfile('outdata/test_merge_srt_tofile.srt')
-    assert os.path.isfile('outdata/test_merge_srt_tofile.unalign.srt')
+    subtitle1 = 'indata/test_cn.srt'
+    subtitle2 = 'indata/test_en.srt'
+
+    file1 = 'outdata/newsrt_cnen.srt'
+    file2 = 'outdata/newsrt_cnen.unalign.txt'
+
+    file3 = 'outdata/test_merge_srt_tofile.srt'
+    file4 = 'outdata/test_merge_srt_tofile.unalign.txt'
+
+    if os.path.isfile(file1):
+        os.remove(file1)
+    if os.path.isfile(file2):
+        os.remove(file2)
+    if os.path.isfile(file3):
+        os.remove(file3)
+    if os.path.isfile(file4):
+        os.remove(file4)
+
+    assert os.path.isfile(subtitle1)
+    assert os.path.isfile(subtitle2)
+
+    assert not os.path.isfile(file1)
+    assert not os.path.isfile(file2)
+    assert not os.path.isfile(file3)
+    assert not os.path.isfile(file4)
+
+    merge_srt_tofile()
+
+    assert os.path.isfile(file1)
+    assert os.path.isfile(file2)
+    assert not os.path.isfile(file3)
+    assert not os.path.isfile(file4)
+
+    merge_srt_tofile(subtitle1, subtitle2,
+                     file3, file4)
+
+    assert os.path.isfile(file1)
+    assert os.path.isfile(file2)
+    assert os.path.isfile(file3)
+    assert os.path.isfile(file4)
 
 
 def test_merge_ass_tofile():
@@ -34,8 +69,8 @@ def test_merge_ass_tofile():
     测试合并到ass
     '''
 
-    file1 = 'outdata/test_new.ass'
-    file2 = 'outdata/test_ass_unalign.txt'
+    file1 = 'outdata/new_ass_cnen.ass'
+    file2 = 'outdata/new_ass_cnen.unalign.txt'
 
     file3 = 'outdata/test_merge_ass_tofile2.ass'
     file4 = 'outdata/test_merge_ass_tofile2.unalign.txt'

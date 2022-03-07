@@ -6,7 +6,7 @@ import datetime
 import re
 
 import chardet
-#TODO 修改默认文件名称。
+
 
 class Srt:
     '''
@@ -119,7 +119,7 @@ def clear_srt(fname, srts, test='-test-'):
     savestr = '\n'.join(savelist)
 
     file1 = open(file=fname[:-3] + 'txt', mode='w',
-              buffering=1000, encoding='utf-8')
+                 buffering=1000, encoding='utf-8')
     file1.write(savestr)
     file1.close()
 
@@ -188,7 +188,7 @@ def clear_after_srt(srt: Srt) -> str:
 def load_srt_from_str(str1):
     '''
     从字符串加载Srt字幕。
-    先做编码转换detect_code，然后做检查check_srt，接着清除特殊字符clear_before_srt，转换，再清除特殊字符clear_after_srt
+    先做编码转换detect_code，然后做检查check_srt，接着清除特殊字符clear_before_srt，转换为Srt，再清除做格式变化clear_after_srt
 
     Args:
         str1 (_type_): 字符串可以是 byte类型的，会做编码转换。
@@ -448,7 +448,8 @@ def load_ass_template(ass_template: str):
         '{language2_subtitle_text}') + 25]
 
     ass_info_style = ass_info_style.replace('{softname}', 'srt mergen box')
-    ass_info_style = ass_info_style.replace('{softurl}', 'xinghuo4096')
+    ass_info_style = ass_info_style.replace(
+        '{softurl}', 'xinghuo4096,https://github.com/xinghuo4096/SrtMergeBox')
     ass_info_style = ass_info_style.replace('{title}', 'title')
     ass_info_style = ass_info_style.replace('{Original_file}', 'srt')
     ass_info_style = ass_info_style.replace('{update_name}', 'npc')
@@ -460,21 +461,26 @@ def load_ass_template(ass_template: str):
 
 def merge_srt_tofile(first_subtitle_fname='indata/test_cn.srt',
                      second_subtitle_fname='indata/test_en.srt',
-                     new_subtitle_fname='outdata/test_new.srt',
-                     unalign_subtitle_fname='outdata/test_srt_unalign.srt',
+                     new_subtitle_fname='outdata/newsrt_cnen.srt',
+                     unalign_subtitle_fname='outdata/newsrt_cnen.unalign.txt',
                      mark1='@@@@@@@-1',
                      mark2='!!!!!!!-2'):
     '''
-    合并连个srt文件到一个srt文件中
+    合并连个srt文件到一个srt文件中,utf-8格式。
 
     Args:
-        first_subtitle_fname (str, optional): _description_. Defaults to 'indata/test_cn.srt'.
-        second_subtitle_fname (str, optional): _description_. Defaults to 'indata/test_en.srt'.
-        new_subtitle_fname (str, optional): _description_. Defaults to 'outdata/test_new.srt'.
-        unalign_subtitle_fname (str, optional): _description_.
-        Defaults to 'outdata/test_srt_unalign.srt'.
-        mark1 (str, optional): _description_. Defaults to '1213@-1'.
-        mark2 (str, optional): _description_. Defaults to '!!!!!!!-2'.
+        first_subtitle_fname (str, optional): 第一个srt字幕的文件名称。
+             Defaults to 'indata/test_cn.srt'.
+        second_subtitle_fname (str, optional):  第二个srt字幕文件名称。
+             Defaults to 'indata/test_en.srt'.
+        new_subtitle_fname (str, optional):新ass文件名称。
+             Defaults to 'outdata/newsrt_cnen.srt'.
+        unalign_subtitle_fname (str, optional): 保存未对齐字幕内容的文件名称。
+        Defaults to 'outdata/newsrt_cnen.unalign.txt'.
+        mark1 (str, optional): 标记，标记第一个字幕中未对其的字幕内容。
+            Defaults to '@@@@@@@-1'.
+        mark2 (str, optional): 标记，标记第二个字幕中未对其的字幕内容。 
+            Defaults to '!!!!!!!-2'.
     '''
     new_subtitle, unalign_subtitle = merge_srt_tostr(first_subtitle_fname,
                                                      second_subtitle_fname,
@@ -485,24 +491,29 @@ def merge_srt_tofile(first_subtitle_fname='indata/test_cn.srt',
 
 def merge_ass_tofile(first_subtitle_fname='indata/test_cn.srt',
                      second_subtitle_fname='indata/test_en.srt',
-                     new_subtitle_fname='outdata/test_new.ass',
-                     unalign_subtitle_fname='outdata/test_ass_unalign.txt',
+                     new_subtitle_fname='outdata/new_ass_cnen.ass',
+                     unalign_subtitle_fname='outdata/new_ass_cnen.unalign.txt',
                      ass_template_fname='indata/test_ass_template_cn_en.txt',
                      mark1='@@@@@@@-1',
                      mark2='!!!!!!!-2'):
     '''
-    合并两个srt格式文件到一个ass格式文件里
+    合并两个srt格式文件到一个ass格式文件里,utf-8格式。
 
     Args:
-        first_subtitle_fname (str, optional): _description_. Defaults to 'indata/test_cn.srt'.
-        second_subtitle_fname (str, optional): _description_. Defaults to 'indata/test_en.srt'.
-        new_subtitle_fname (str, optional): _description_. Defaults to 'outdata/test_new.ass'.
-        unalign_subtitle_fname (str, optional): _description_.
-        Defaults to 'outdata/test_ass_unalign.txt'.
+        first_subtitle_fname (str, optional): 第一个srt字幕的文件名称。
+            Defaults to 'indata/test_cn.srt'.
+        second_subtitle_fname (str, optional): 第二个srt字幕文件名称。
+            Defaults to 'indata/test_en.srt'.
+        new_subtitle_fname (str, optional): 新ass文件名称。
+            Defaults to 'outdata/new_ass.ass'.
+        unalign_subtitle_fname (str, optional): 保存未对齐字幕内容的文件名称。
+            Defaults to 'outdata/new_ass.unalign.txt'.
         ass_template_fname (str, optional): _description_.
         Defaults to 'indata/test_ass_template_cn_en.txt'.
-        mark1 (str, optional): _description_. Defaults to '1415@-1'.
-        mark2 (str, optional): _description_. Defaults to '!!!!!!!-2'.
+        mark1 (str, optional): 标记，标记第一个字幕中未对其的字幕内容。 
+            Defaults to '@@@@@@@-1'.
+        mark2 (str, optional): 标记，标记第二个字幕中未对其的字幕内容。
+            Defaults to '!!!!!!!-2'.
     '''
 
     new_subtitle, unalign_subtitle = merge_to_ass_str(first_srt_fname=first_subtitle_fname,
@@ -511,7 +522,7 @@ def merge_ass_tofile(first_subtitle_fname='indata/test_cn.srt',
                                                       mark1=mark1, mark2=mark2)
 
     sf1 = open(file=new_subtitle_fname, mode='w',
-              buffering=1000, encoding='utf-8')
+               buffering=1000, encoding='utf-8')
     sf1.write(new_subtitle)
     sf1.close()
 
