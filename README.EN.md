@@ -3,7 +3,9 @@
 ## Introduction
 
 Merge 2 subtitles in srt format into srt or ass format subtitles.
+
 Example: Chinese and English subtitles merged into the same srt format subtitle, or one ass format subtitle.
+
 Require srt subtitles in both languages of the same movie.
 
 ## Use
