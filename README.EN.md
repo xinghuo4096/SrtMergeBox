@@ -15,6 +15,7 @@ The requirement is that the subtitles are in srt format for both languages of th
 merge them into srt format subtitle `movie_new_srt.srt` and ass format subtitle `moviet_new_ass.ass` and store them in `outdata` folder.
     - srt format subtitles source subtitles that are not aligned are stored to `outdata` folder with the file name: `movie_new_srt.unalign.txt`
     - ass format subtitle source subtitles without alignment stored to `outdata` folder, filename: `movie_new_ass.unalgin.txt`.
+3.You can adjust the `mini_time` to reduce the unaligned part of the subtitles
 
 ### Preparation
 
