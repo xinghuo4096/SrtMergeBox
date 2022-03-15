@@ -1,6 +1,8 @@
-# SrtMergeBox
+# SrtMergeBox Srt合并盒子
 
 ## 简介
+
+SSMB（Srt Subtitle Merge Box ）SRT合并盒子
 
 合并2个srt格式字幕为srt或ass格式字幕。目的是制作双语字幕。
 

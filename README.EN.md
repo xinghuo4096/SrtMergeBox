@@ -2,6 +2,8 @@
 
 ## Introduction
 
+SSMB（Srt Subtitle Merge Box ）
+
 Merge 2 srt format subtitles into srt or ass format subtitles. The purpose is to create dual language subtitles.
 
 For example: Chinese subtitles and English subtitles merged into the same srt format subtitle, or one ass format subtitle.
