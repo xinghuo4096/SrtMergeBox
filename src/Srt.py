@@ -327,6 +327,14 @@ def merge_srt_tostr(first_subtitle_fname='indata/test_cn.srt',
     first_subtitle = load_srt_fromfile(first_subtitle_fname)
     second_subtitle = load_srt_fromfile(second_subtitle_fname)
 
+    for item in first_subtitle:
+        assert isinstance(item, Srt)
+        item.text = item.text.replace('\n', ' ')
+
+    for item in second_subtitle:
+        assert isinstance(item, Srt)
+        item.text = item.text.replace('\n', ' ')
+
     assert isinstance(first_subtitle, list)
     assert isinstance(second_subtitle, list)
 
@@ -374,8 +382,14 @@ def merge_srt_tostr(first_subtitle_fname='indata/test_cn.srt',
             if abs(x.start_time - item.start_time) <= mini_time
         ]
         if start_eq_end_noteq:
+            is_one_sentence = True
             for item2 in start_eq_end_noteq:
-                item.text = item.text + '\n' + item2.text
+                if is_one_sentence:
+                    item.text = item.text + '\n' + item2.text
+                    is_one_sentence = False
+                else:
+                    item.text = item.text + ' ' + item2.text
+
                 if item.start_time > item2.start_time:
                     item.start_time = item2.start_time
                 if item.end_time < item2.end_time:
