@@ -19,6 +19,14 @@ class Srt:
     ]
     RE_TIME=re.compile('[:,]')
 
+    MINI_MERGE_TIME = datetime.timedelta(microseconds=500*1000)
+    '''
+    把两个字幕合并的最短时间，500ms。
+    500*1000 microsecond
+    Returns:
+        _type_: _description_
+    '''
+
     def __init__(self, sub_index, sub_time, sub_text) -> None:
         self.index = int(sub_index)
 
@@ -171,6 +179,23 @@ def clear_before_srt(str1) -> str:
     return subsrt
 
 
+def clear_nfsubtitle_before_srt(str1) -> str:
+    '''
+    清除类似NF字幕里，字幕中标识方向的html字符&lrm;&rlm;
+
+    <p>&lrm;' 5 times on the page.</p>
+    <p>&rlm;' 5 times on the page.</p>
+
+    Args:
+        str1 (_type_): _description_
+
+    Returns:
+        str: _description_
+    '''
+    subsrt = str1.replace('&lrm;', '').replace('&rlm;', '')
+    return subsrt
+
+
 def clear_after_srt(srt: Srt) -> str:
     '''
     1.把一个字幕块里的字幕变为一行。
@@ -179,7 +204,7 @@ def clear_after_srt(srt: Srt) -> str:
 
        ` Yeah?`
 
-        这样的字幕变为 `- Dad. - Yeah?`
+        这样的字幕变为 ` Dad.  Yeah?`
 
     Args:
         str1 (_type_): str
@@ -187,7 +212,7 @@ def clear_after_srt(srt: Srt) -> str:
     Returns:
         str: str
     '''
-    srt.text = srt.text.replace('\n', '-')
+    srt.text = srt.text.replace('\n', ' ')
 
 
 def load_srt_from_str(str1):
@@ -207,6 +232,7 @@ def load_srt_from_str(str1):
     check_srt(subsrt)
 
     subsrt = clear_before_srt(subsrt)
+    subsrt = clear_nfsubtitle_before_srt(subsrt)
 
     sublines = [x.strip() for x in subsrt.split("\n") if x.strip()]
 
@@ -265,24 +291,54 @@ def by_start_time(elem: Srt):
 def merge_srt_tostr(first_subtitle_fname='indata/test_cn.srt',
                     second_subtitle_fname='indata/test_en.srt',
                     mark1='@@@@@@@-1',
-                    mark2='!!!!!!!-2'):
+                    mark2='!!!!!!!-2', mini_time=Srt.MINI_MERGE_TIME):
     '''
-    返回:
-        新字幕,无法对齐内容new_subtitle, unalign_subtitle
     - 中文
-    1. 把两个字幕中的开始时间和结束时间一样部分合并,存入新字幕文件。
+    1.合并
+
+        把两个字幕中的‘开始时间’和‘结束时间’一样部分合并,存入新字幕文件。
+
+        把两个字幕中的‘开始时间’一样的部分合并,取两者最晚的‘结束时间’，存入新字幕。
+
+        把两个‘开始时间’绝对值相差‘mini_time’ 的字幕合并，取两者最晚的‘结束时间’，存入新字幕。
+
     2. 把没有合并的内容存储到一个新文件。
     3. 把第2步中没有合并的内容存储到另一个文件。
     - english
-    1. merge the start time and end time parts of both subtitles into a new subtitle file.
+    1.Merge
+
+        Merge the parts of both subtitles with the same 'start time' and 'end time' into a new subtitle file.
+
+        Merge the parts of both subtitles with the same 'start time', and take the latest 'end time' of both and store it in the new subtitle file.
+
+        Merge the two subtitles with the absolute difference of 'start time' and 'min time', and take the latest 'end time' of both, and store them in the new subtitle file.
+
     2. Store the content that is not merged into a new file.
     3. Store the content that was not merged in step 2 to another file.
 
+    Args:
+        first_subtitle_fname (str, optional): 字幕1 Defaults to 'indata/test_cn.srt'.
+        second_subtitle_fname (str, optional): 字幕2 Defaults to 'indata/test_en.srt'.
+        mark1 (str, optional): _description_. 字幕1字幕无法对齐时标记 to '@@@@@@@-1'.
+        mark2 (str, optional): _description_. 字幕2字幕无法对齐时标记 to '!!!!!!!-2'.
+        mini_time (timedelta, optional): 当字幕1和字幕的开始时间差在mini_time内，两字幕可以合并
+        Defaults to Srt.MINI_MERGE_TIME=500*1000μs(microsecond)=500ms。
+    返回:
+        新字幕,无法对齐内容。
+        new_subtitle, unalign_subtitle
     '''
     new_subtitle = []
 
     first_subtitle = load_srt_fromfile(first_subtitle_fname)
     second_subtitle = load_srt_fromfile(second_subtitle_fname)
+
+    for item in first_subtitle:
+        assert isinstance(item, Srt)
+        item.text = item.text.replace('\n', ' ')
+
+    for item in second_subtitle:
+        assert isinstance(item, Srt)
+        item.text = item.text.replace('\n', ' ')
 
     assert isinstance(first_subtitle, list)
     assert isinstance(second_subtitle, list)
@@ -304,9 +360,57 @@ def merge_srt_tostr(first_subtitle_fname='indata/test_cn.srt',
         else:
             pass
 
+    # strat_eq  end_not_eq
+    for item in first_subtitle:
+        assert isinstance(item, Srt)
+        start_eq_end_noteq = [
+            x for x in second_subtitle
+            if x.start_time == item.start_time and x.end_time != item.end_time
+        ]
+        if start_eq_end_noteq:
+            for item2 in start_eq_end_noteq:
+                item.text = item.text + '\n' + item2.text
+                if item.end_time < item2.end_time:
+                    item.end_time = item2.end_time
+            new_subtitle.append(item)
+
+            for item2 in start_eq_end_noteq:
+                second_subtitle.remove(item2)
+        else:
+            pass
+
+    # strat_time1 - start_time2 <=mini_time
+    for item in first_subtitle:
+        assert isinstance(item, Srt)
+        start_eq_end_noteq = [
+            x for x in second_subtitle
+            if abs(x.start_time - item.start_time) <= mini_time
+        ]
+        if start_eq_end_noteq:
+            is_one_sentence = True
+            for item2 in start_eq_end_noteq:
+                if is_one_sentence:
+                    item.text = item.text + '\n' + item2.text
+                    is_one_sentence = False
+                else:
+                    item.text = item.text + ' ' + item2.text
+
+                if item.start_time > item2.start_time:
+                    item.start_time = item2.start_time
+                if item.end_time < item2.end_time:
+                    item.end_time = item2.end_time
+            new_subtitle.append(item)
+
+            for item2 in start_eq_end_noteq:
+                second_subtitle.remove(item2)
+        else:
+            pass
+
+    # remove
     for item in new_subtitle:
         first_subtitle.remove(item)
 
+    # unalign
     unalign_subtitle = []
     for item in first_subtitle:
         item.text = mark1 + item.text
@@ -374,26 +478,39 @@ def format_ass_time(t_time):
 def merge_to_ass_str(first_srt_fname='indata/test_cn.srt',
                      second_srt_fname='indata/test_en.srt',
                      ass_template='indata/test_ass_template_cn_en.txt',
-                     mark1='@@@@@@@-1', mark2='!!!!!!!-2'):
+                     mark1='@@@@@@@-1', mark2='!!!!!!!-2', mini_time=Srt.MINI_MERGE_TIME):
     '''
     合并两个srt文件为一个ass文件
+    - 中文
+    1.合并
+
+        把两个字幕中的‘开始时间’和‘结束时间’一样部分合并,存入新字幕文件。
+
+        把两个字幕中的‘开始时间’一样的部分合并,取两者最晚的‘结束时间’，存入新字幕。
+
+        把两个‘开始时间’绝对值相差‘mini_time’ 的字幕合并，取两者最晚的‘结束时间’，存入新字幕。
+
+    2. 把没有合并的内容存储到一个新文件。
+    3. 把第2步中没有合并的内容存储到另一个文件。
 
     Args:
-        first_srt_fname (str, optional): _description_. Defaults to 'indata/test_cn.srt'.
-        second_srt_fname (str, optional): _description_. Defaults to 'indata/test_en.srt'.
-        ass_template (str, optional): Defaults to 'indata/test_ass_template_cn_en.txt'.
-        mark1 (str, optional): _description_. Defaults to '1011@-1'.
-        mark2 (str, optional): _description_. Defaults to '!!!!!!!-2'.
-
+        first_subtitle_fname (str, optional): 字幕1 Defaults to 'indata/test_cn.srt'.
+        second_subtitle_fname (str, optional): 字幕1 Defaults to 'indata/test_en.srt'.
+        ass_template (str, optional):ass字幕模板。 Defaults to 'indata/test_ass_template_cn_en.txt'.
+        mark1 (str, optional): _description_. 字幕1无法对齐时标记 to '@@@@@@@-1'.
+        mark2 (str, optional): _description_. 字幕2无法对齐时标记 to '!!!!!!!-2'.
+        mini_time (timedelta, optional):当字幕1和字幕2的开始时间差在mini_time内，两字幕可以合并
+        Defaults to Srt.MINI_MERGE_TIME=500*1000μs(microsecond)=500ms。
     Returns:
-        _type_: _description_
+        新字幕,无法对齐内容。
+        new_subtitle, unalign_subtitle
     '''
 
     ass_info_style, ass_text = load_ass_template(ass_template)
 
     temp = merge_srt_tostr(first_subtitle_fname=first_srt_fname,
                            second_subtitle_fname=second_srt_fname,
-                           mark1=mark1, mark2=mark2)
+                           mark1=mark1, mark2=mark2, mini_time=mini_time)
     srts = temp[0]
     unaligne_srts = temp[1]
 
@@ -469,9 +586,21 @@ def merge_srt_tofile(first_subtitle_fname='indata/test_cn.srt',
                      new_subtitle_fname='outdata/newsrt_cnen.srt',
                      unalign_subtitle_fname='outdata/newsrt_cnen.unalign.txt',
                      mark1='@@@@@@@-1',
-                     mark2='!!!!!!!-2'):
+                     mark2='!!!!!!!-2',
+                     mini_time=Srt.MINI_MERGE_TIME):
     '''
     合并连个srt文件到一个srt文件中,utf-8格式。
+    - 中文
+    1.合并
+
+        把两个字幕中的‘开始时间’和‘结束时间’一样部分合并,存入新字幕文件。
+
+        把两个字幕中的‘开始时间’一样的部分合并,取两者最晚的‘结束时间’，存入新字幕。
+
+        把两个‘开始时间’绝对值相差‘mini_time’ 的字幕合并，取两者最晚的‘结束时间’，存入新字幕。
+
+    2. 把没有合并的内容存储到一个新文件。
+    3. 把第2步中没有合并的内容存储到另一个文件。
 
     Args:
         first_subtitle_fname (str, optional): 第一个srt字幕的文件名称。
@@ -484,12 +613,14 @@ def merge_srt_tofile(first_subtitle_fname='indata/test_cn.srt',
         Defaults to 'outdata/newsrt_cnen.unalign.txt'.
         mark1 (str, optional): 标记，标记第一个字幕中未对其的字幕内容。
             Defaults to '@@@@@@@-1'.
-        mark2 (str, optional): 标记，标记第二个字幕中未对其的字幕内容。 
+        mark2 (str, optional): 标记，标记第二个字幕中未对其的字幕内容。
             Defaults to '!!!!!!!-2'.
+        mini_time (timedelta, optional):当字幕1和字幕2的开始时间差在mini_time内，两字幕可以合并。
+        Defaults to Srt.MINI_MERGE_TIME=500*1000μs(microsecond)=500ms。
     '''
     new_subtitle, unalign_subtitle = merge_srt_tostr(first_subtitle_fname,
                                                      second_subtitle_fname,
-                                                     mark1, mark2)
+                                                     mark1, mark2, mini_time)
     save_srt(new_subtitle_fname, new_subtitle)
     save_srt(unalign_subtitle_fname, unalign_subtitle)
 
@@ -500,7 +631,7 @@ def merge_ass_tofile(first_subtitle_fname='indata/test_cn.srt',
                      unalign_subtitle_fname='outdata/new_ass_cnen.unalign.txt',
                      ass_template_fname='indata/test_ass_template_cn_en.txt',
                      mark1='@@@@@@@-1',
-                     mark2='!!!!!!!-2'):
+                     mark2='!!!!!!!-2', mini_time=Srt.MINI_MERGE_TIME):
     '''
     合并两个srt格式文件到一个ass格式文件里,utf-8格式。
 
@@ -515,16 +646,18 @@ def merge_ass_tofile(first_subtitle_fname='indata/test_cn.srt',
             Defaults to 'outdata/new_ass.unalign.txt'.
         ass_template_fname (str, optional): _description_.
         Defaults to 'indata/test_ass_template_cn_en.txt'.
-        mark1 (str, optional): 标记，标记第一个字幕中未对其的字幕内容。 
+        mark1 (str, optional): 标记，标记第一个字幕中未对其的字幕内容。
             Defaults to '@@@@@@@-1'.
         mark2 (str, optional): 标记，标记第二个字幕中未对其的字幕内容。
             Defaults to '!!!!!!!-2'.
+        mini_time (timedelta, optional):当字幕1和字幕2的开始时间差在mini_time内，两字幕可以合并。
+        Defaults to Srt.MINI_MERGE_TIME=500*1000μs(microsecond)=500ms。
     '''
 
     new_subtitle, unalign_subtitle = merge_to_ass_str(first_srt_fname=first_subtitle_fname,
                                                       second_srt_fname=second_subtitle_fname,
                                                       ass_template=ass_template_fname,
-                                                      mark1=mark1, mark2=mark2)
+                                                      mark1=mark1, mark2=mark2, mini_time=mini_time)
 
     sf1 = open(file=new_subtitle_fname, mode='w',
                buffering=1000, encoding='utf-8')

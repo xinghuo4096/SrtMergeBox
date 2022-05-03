@@ -1,6 +1,8 @@
-# SrtMergeBox
+# SrtMergeBox Srt合并盒子
 
 ## 简介
+
+SSMB（Srt Subtitle Merge Box ）SRT合并盒子
 
 合并2个srt格式字幕为srt或ass格式字幕。目的是制作双语字幕。
 
@@ -15,6 +17,7 @@
 合并为srt格式字幕`movie_new_srt.srt`和ass格式字幕`moviet_new_ass.ass`，存储到`outdata`文件夹。
     - srt格式字幕源字幕没有对齐的部分存储到`outdata`文件夹，文件名:`movie_new_srt.unalign.txt`
     - ass格式字幕源字幕没有对齐的部分存储到`outdata`文件夹，文件名：`movie_new_ass.unalgin.txt`。
+3. 可以调整`mini_time`来减少字幕没有对齐的部分。
 
 ### 准备工作
 
