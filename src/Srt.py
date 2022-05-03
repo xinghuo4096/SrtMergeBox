@@ -17,6 +17,7 @@ class Srt:
         'utf-32', 'utf-16', 'utf-8', 'UTF-8-SIG'
         'cp1252', 'gb2312', 'gbk', 'big5'
     ]
+    RE_TIME=re.compile('[:,]')
 
     def __init__(self, sub_index, sub_time, sub_text) -> None:
         self.index = int(sub_index)
@@ -66,7 +67,9 @@ def detect_code(detect_str: str) -> tuple:
 def load_time(srt_time: str) -> datetime.datetime:
     '''
     '%H:%M:%S,%f'字符串转换为datetime
-
+    '00:00:33,46'
+    '00:00:33,046'
+    应该是一样的时间。
 
     Args:
         srt_time (str): 时间字符串
@@ -76,7 +79,9 @@ def load_time(srt_time: str) -> datetime.datetime:
     '''
 
     srt_time = srt_time.strip()
-    tm1 = datetime.datetime.strptime(srt_time, '%H:%M:%S,%f')
+    stime=Srt.RE_TIME.split(srt_time)            
+        
+    tm1=datetime.datetime(year=2022,month=1,day=1,hour=int(stime[0]),minute=int(stime[1]),second=int(stime[2]),microsecond=int(stime[3])*1000) 
     return tm1
 
 

@@ -38,6 +38,9 @@ def test_detect():
 def test_load_time():
     '''
     test
+    srt1 = '00:00:33,46'
+    srt2 = '00:00:33,046'
+    应该是一样的时间。
     '''
     srt_time = ' 00:03:06,520  '
     time1 = load_time(srt_time)
@@ -47,7 +50,21 @@ def test_load_time():
     assert time1.minute == 3
     assert time1.second == 6
     assert time1.microsecond == 520 * 1000
-    return time1
+
+    srt1 = '02:03:33,46'
+    srt2 = '02:03:33,046'
+
+    tm1 = load_time(srt1)
+    tm2 = load_time(srt2)
+
+    assert isinstance(time1, datetime.datetime)
+    assert tm1.hour == 2
+    assert tm1.minute == 3
+    assert tm1.second == 33
+    assert tm1.microsecond == 46 * 1000
+
+    assert tm1 == tm2
+
 
 
 def test_time():
