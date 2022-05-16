@@ -3,6 +3,7 @@
 
 '''
 import datetime
+import re
 from urllib.request import urlopen
 from Srt import Srt, detect_code, load_srt_fromfile, load_time, format_time
 
@@ -19,6 +20,80 @@ def test_load_srt():
     assert isinstance(item, Srt)
     assert item.text == 'I will.'
     assert item.index == 10
+
+
+RE_SDH = re.compile('[-\\s]*\\s*[\\[(]+[\\s\\S]+?[\\])]+[\\s+:]*')
+RE_TEXT = re.compile(r'\w+')
+
+
+def clear_sdh(str1: str) -> str:
+    '''
+     去掉-()[]*包围的sdh内容。
+
+    Args:
+        str1 (str): _description_
+
+    Returns:
+        _type_: bool
+    '''
+    cleartext = str1.strip()
+    if cleartext:
+        cleartext = RE_SDH.sub('', cleartext)
+        cleartext = cleartext.strip()
+    return cleartext
+
+
+def test_clear_sdh():
+    '''
+    test can add srt
+
+    Args:
+        srt1 (str): _description_
+    '''
+    str0 = 'this is test.'
+    assert str0 == clear_sdh(str0)
+
+    str1 = '[mysterious clanging music]'
+    str2 = '- [wind howling]'
+    str3 = '''- [wind howling]
+    - [woman choking]
+    '''
+    str4 = '(mysterious clanging music)'
+    str5 = '- (wind howling)'
+    str6 = '''
+    - (wind howling)
+    - (woman choking)
+    '''
+    str7 = '''[wind howling]
+    [woman choking]
+    '''
+    str8 = '''[wind howling]
+    [woman choking]
+    '''
+    assert not clear_sdh(str1)
+    assert not clear_sdh(str2)
+    assert not clear_sdh(str3)
+    assert not clear_sdh(str4)
+    assert not clear_sdh(str5)
+    assert not clear_sdh(str6)
+    assert not clear_sdh(str7)
+    assert not clear_sdh(str8)
+
+    str9 = "* *"
+    str10 = "*this is test. *"
+    str11 = "[wind howling]*this is test. *"
+    str12 = "(wind howling) this is test."
+    str13 = "- [wind howling] this is test.[wind]:this is test2."
+    str14 = "- (wind howling) this is test.(wind):this is test2."
+    str15 = "- [wind howling] : this is test.(wind)this is test2."
+
+    assert str9 == clear_sdh(str9)
+    assert str10 == clear_sdh(str10)
+    assert '*this is test. *' == clear_sdh(str11)
+    assert 'this is test.' == clear_sdh(str12)
+    assert 'this is test.this is test2.' == clear_sdh(str13)
+    assert 'this is test.this is test2.' == clear_sdh(str14)
+    assert 'this is test.this is test2.' == clear_sdh(str15)
 
 
 def test_detect():
