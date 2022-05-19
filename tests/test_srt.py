@@ -7,6 +7,47 @@ import re
 from urllib.request import urlopen
 from Srt import Srt, detect_code, load_srt_fromfile, load_time, format_time
 
+def test_split_cnsubtitle():
+    '''_summary_
+
+    Returns:
+        _description_
+    ''' 
+    str1='这是测试'
+    str2='这是测试这是测试这是测试这是测试这是测试这是测试这是测试'
+    assert split_cnsubtitle(str1)==str1
+    assert split_cnsubtitle(str2)==r'这是测试这是测试这是测试这是\N测试这是测试这是测试这是测试'
+    
+    str3='一二三四五六七八九abc ，def ,ghi一二三四五六七八九abc ，def ,ghi 123456'
+    assert split_cnsubtitle(str3)==r'一二三四五六七八九abc ，def ,ghi一二三\N四五六七八九abc ，def ,ghi 123456'
+    
+    str4='是的，我的意思是，我的大学历史学位对我没有任何帮助，但是哦，好吧。'
+    assert split_cnsubtitle(str4)==r'是的，我的意思是，我的大学历史学\N位对我没有任何帮助，但是哦，好吧。'
+    
+    str5='但它有点像这样，然后是小厨房，套间，然后我有一张折叠沙发床，但它太小了，我不能把它折叠起来。'
+    assert split_cnsubtitle(str5)=='但它有点像这样，然后是小厨房，套间，然后我有一\\N张折叠沙发床，但它太小了，我不能把它折叠起来。'
+    
+def split_cnsubtitle(str1:str,maxlen=24)->str:
+    '''
+    拆分ass字幕中长度超过24个字的中文字幕。
+    
+    ass以\\N为折行。
+    
+    Arguments:
+        str1 -- 待拆分的字符串
+
+    Returns:
+        拆分结果
+    '''
+    ret=str1
+    strlen=len(str1)
+    splite_index=int(strlen/2)
+    if  strlen>maxlen:    
+        ret=f'{str1[0:splite_index]}\\N{str1[splite_index:]}'
+    return ret
+         
+    
+       
 
 def test_load_srt():
     '''
