@@ -698,7 +698,7 @@ def merge_ass_tofile(first_subtitle_fname='indata/test_cn.srt',
     new_subtitle, unalign_subtitle = merge_to_ass_str(first_srt_fname=first_subtitle_fname,
                                                       second_srt_fname=second_subtitle_fname,
                                                       ass_template=ass_template_fname,
-                                                      mark1=mark1, mark2=mark2, mini_time=mini_time, max_cnsubtitle=Srt.CHINESE_SUBTITLE_LENGTH)
+                                                      mark1=mark1, mark2=mark2, mini_time=mini_time, max_cnsubtitle=max_cnsubtitle)
 
     sf1 = open(file=new_subtitle_fname, mode='w',
                buffering=1000, encoding='utf-8')
