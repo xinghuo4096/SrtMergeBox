@@ -1,0 +1,2 @@
+Dialogue: 0,0:00:00.05,0:00:10.07,*Default,NPC1,0000,0000,0000,,制作软件： 生肉啃食机\N SrtMergeBox Srt合并盒子 \N{\fn微软雅黑}{\b0}{\fs14}{\3c&H202020&}{\shad1}https://github.com/xinghuo4096/Raw-subtitle-nibble-machine \N https://github.com/xinghuo4096/SrtMergeBox
+Dialogue: 0,0:00:17.20,0:00:30.07,*Default,NPC1,0000,0000,0000,,片名  \N{\fn微软雅黑}{\b0}{\fs14}{\3c&H202020&}{\shad1} name

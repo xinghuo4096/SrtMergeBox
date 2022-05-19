@@ -17,7 +17,7 @@ class Srt:
         'utf-32', 'utf-16', 'utf-8', 'UTF-8-SIG'
         'cp1252', 'gb2312', 'gbk', 'big5'
     ]
-    RE_TIME=re.compile('[:,]')
+    RE_TIME = re.compile('[:,]')
 
     MINI_MERGE_TIME = datetime.timedelta(microseconds=500*1000)
     '''
@@ -25,6 +25,10 @@ class Srt:
     500*1000 microsecond
     Returns:
         _type_: _description_
+    '''
+    CHINESE_SUBTITLE_LENGTH = 22
+    '''
+    中文字幕一行最多字符默认22个
     '''
 
     def __init__(self, sub_index, sub_time, sub_text) -> None:
@@ -87,9 +91,10 @@ def load_time(srt_time: str) -> datetime.datetime:
     '''
 
     srt_time = srt_time.strip()
-    stime=Srt.RE_TIME.split(srt_time)            
-        
-    tm1=datetime.datetime(year=2022,month=1,day=1,hour=int(stime[0]),minute=int(stime[1]),second=int(stime[2]),microsecond=int(stime[3])*1000) 
+    stime = Srt.RE_TIME.split(srt_time)
+
+    tm1 = datetime.datetime(year=2022, month=1, day=1, hour=int(stime[0]), minute=int(
+        stime[1]), second=int(stime[2]), microsecond=int(stime[3])*1000)
     return tm1
 
 
@@ -475,10 +480,43 @@ def format_ass_time(t_time):
         t_time.hour, t_time.minute, t_time.second, t_time.microsecond // 10000)
 
 
+def split_cnsubtitle(str1: str, maxlen=Srt.CHINESE_SUBTITLE_LENGTH) -> str:
+    '''
+    拆分ass字幕中长度超过maxlen个字的中文字幕。
+
+    默认Srt.CHINESE_SUBTITLE_LENGTH，22个字符
+
+    最多拆为3行。
+
+    ass以\\N为折行。
+
+    Arguments:
+        str1 -- 待拆分的字符串
+
+    Returns:
+        拆分结果
+    '''
+    ret = str1
+    strlen = len(str1)
+    splite_count = strlen//maxlen
+    match splite_count:
+        case 0:
+            ret = str1
+        case 1:
+            ret = f'{str1[0:maxlen]}\\N{str1[maxlen:]}'
+        case 2:
+            ret = f'{str1[0:maxlen]}\\N{str1[maxlen:maxlen*2]}\\N{str1[maxlen*2:]}'
+        case 3:
+            ret = f'{str1[0:maxlen]}\\N{str1[maxlen:maxlen*2]}\\N{str1[maxlen*2:maxlen*3]}\\N{str1[maxlen*3:]}'
+        case _:
+            ret = f'{str1[0:maxlen]}\\N{str1[maxlen:maxlen*2]}\\N{str1[maxlen*2:maxlen*3]}\\N{str1[maxlen*3:]}'
+    return ret
+
+
 def merge_to_ass_str(first_srt_fname='indata/test_cn.srt',
                      second_srt_fname='indata/test_en.srt',
                      ass_template='indata/test_ass_template_cn_en.txt',
-                     mark1='@@@@@@@-1', mark2='!!!!!!!-2', mini_time=Srt.MINI_MERGE_TIME):
+                     mark1='@@@@@@@-1', mark2='!!!!!!!-2', mini_time=Srt.MINI_MERGE_TIME, max_cnsubtitle=Srt.CHINESE_SUBTITLE_LENGTH):
     '''
     合并两个srt文件为一个ass文件
     - 中文
@@ -500,6 +538,7 @@ def merge_to_ass_str(first_srt_fname='indata/test_cn.srt',
         mark1 (str, optional): _description_. 字幕1无法对齐时标记 to '@@@@@@@-1'.
         mark2 (str, optional): _description_. 字幕2无法对齐时标记 to '!!!!!!!-2'.
         mini_time (timedelta, optional):当字幕1和字幕2的开始时间差在mini_time内，两字幕可以合并
+        max_cnsubtitle:中文字幕中一行字符最长数，默认22个字符，超出后会折为2行。如果设置为10240就不会折行。
         Defaults to Srt.MINI_MERGE_TIME=500*1000μs(microsecond)=500ms。
     Returns:
         新字幕,无法对齐内容。
@@ -526,14 +565,16 @@ def merge_to_ass_str(first_srt_fname='indata/test_cn.srt',
         languages = item.text.split('\n')
         match len(languages):
             case 1:
-                text = text.replace('{language1_subtitle_text}', languages[0])
+                text = text.replace(
+                    '{language1_subtitle_text}', split_cnsubtitle(languages[0], max_cnsubtitle))
                 text = text[:text.find(r'\N{\fn')]
             case 2:
-                text = text.replace('{language1_subtitle_text}', languages[0])
+                text = text.replace(
+                    '{language1_subtitle_text}', split_cnsubtitle(languages[0], max_cnsubtitle))
                 text = text.replace('{language2_subtitle_text}', languages[1])
             case _:
                 text = text.replace(
-                    '{language1_subtitle_text}', ''.join(languages[:-1]))
+                    '{language1_subtitle_text}', split_cnsubtitle(''.join(languages[:-1]), max_cnsubtitle))
                 text = text.replace(
                     '{language2_subtitle_text}', ''.join(languages[-1]))
 
@@ -631,7 +672,7 @@ def merge_ass_tofile(first_subtitle_fname='indata/test_cn.srt',
                      unalign_subtitle_fname='outdata/new_ass_cnen.unalign.txt',
                      ass_template_fname='indata/test_ass_template_cn_en.txt',
                      mark1='@@@@@@@-1',
-                     mark2='!!!!!!!-2', mini_time=Srt.MINI_MERGE_TIME):
+                     mark2='!!!!!!!-2', mini_time=Srt.MINI_MERGE_TIME, max_cnsubtitle=Srt.CHINESE_SUBTITLE_LENGTH):
     '''
     合并两个srt格式文件到一个ass格式文件里,utf-8格式。
 
@@ -657,7 +698,7 @@ def merge_ass_tofile(first_subtitle_fname='indata/test_cn.srt',
     new_subtitle, unalign_subtitle = merge_to_ass_str(first_srt_fname=first_subtitle_fname,
                                                       second_srt_fname=second_subtitle_fname,
                                                       ass_template=ass_template_fname,
-                                                      mark1=mark1, mark2=mark2, mini_time=mini_time)
+                                                      mark1=mark1, mark2=mark2, mini_time=mini_time, max_cnsubtitle=Srt.CHINESE_SUBTITLE_LENGTH)
 
     sf1 = open(file=new_subtitle_fname, mode='w',
                buffering=1000, encoding='utf-8')
