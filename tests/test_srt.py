@@ -5,6 +5,8 @@
 import datetime
 import re
 from urllib.request import urlopen
+
+import pytest
 from Srt import Srt, detect_code, load_srt_fromfile, load_time, format_time, split_cnsubtitle
 
 
@@ -17,26 +19,38 @@ def test_split_cnsubtitle():
     str1 = '这是测试'
     str2 = '这是测试这是测试这是测试这是测试这是测试这是测试这是测试'
     assert split_cnsubtitle(str1) == str1
-    assert split_cnsubtitle(str2) == r'这是测试这是测试这是测试这是测试这是测试这是\N测试这是测试'
-    assert split_cnsubtitle(str2, 24) == r'这是测试这是测试这是测试这是测试这是测试这是测试\N这是测试'
+    assert split_cnsubtitle(str2) == r'这是测试这是测试这是测试这是\N测试这是测试这是测试这是测试'
+    assert split_cnsubtitle(str2, 24) == r'这是测试这是测试这是测试这是\N测试这是测试这是测试这是测试'
+    assert split_cnsubtitle(str2, 28) == r'这是测试这是测试这是测试这是测试这是测试这是测试这是测试'
+    assert split_cnsubtitle(str2, 29) == r'这是测试这是测试这是测试这是测试这是测试这是测试这是测试'
 
     str3 = '一二三四五六七八九abc ，def ,ghi一二三四五六七八九abc ，def ,ghi 123456'
     assert split_cnsubtitle(
-        str3) == r'一二三四五六七八九abc ，def ,ghi\N一二三四五六七八九abc ，def ,ghi\N 123456'
+        str3) == r'一二三四五六七八九abc ，def\N ,ghi一二三四五六七八九abc\N ，def ,ghi 123456'
 
     str4 = '是的，我的意思是，我的大学历史学位对我没有任何帮助，但是哦，好吧。'
-    assert split_cnsubtitle(str4) == r'是的，我的意思是，我的大学历史学位对我没有任\N何帮助，但是哦，好吧。'
+    assert split_cnsubtitle(str4) == r'是的，我的意思是，我的大学历史学位\N对我没有任何帮助，但是哦，好吧。'
 
     str5 = '但它有点像这样，然后是小厨房，套间，然后我有一张折叠沙发床，但它太小了，我不能把它折叠起来。'
     assert split_cnsubtitle(
-        str5) == '但它有点像这样，然后是小厨房，套间，然后我有\\N一张折叠沙发床，但它太小了，我不能把它折叠起\\N来。'
-    assert split_cnsubtitle(str5, 1024) == str5
+        str5, 20) == '但它有点像这样，然后是小厨房，套\\N间，然后我有一张折叠沙发床，但它\\N太小了，我不能把它折叠起来。'
     assert split_cnsubtitle(
-        str5, 20) == '但它有点像这样，然后是小厨房，套间，然后\\N我有一张折叠沙发床，但它太小了，我不能把\\N它折叠起来。'
+        str5) == '但它有点像这样，然后是小厨房，套\\N间，然后我有一张折叠沙发床，但它\\N太小了，我不能把它折叠起来。'
+    assert split_cnsubtitle(
+        str5, 26) == '但它有点像这样，然后是小厨房，套间，然后我有一\\N张折叠沙发床，但它太小了，我不能把它折叠起来。'
+    assert split_cnsubtitle(
+        str5, 27) == '但它有点像这样，然后是小厨房，套间，然后我有一\\N张折叠沙发床，但它太小了，我不能把它折叠起来。'
+    assert split_cnsubtitle(str5, 1024) == str5
 
     str6 = '但它有点像这样，然后是小厨房，套间，然后我有一张折叠沙发床，但它太小了，我不能把它折叠起来。但它有点像这样，然后是小厨房，套间，然后我有一张折叠沙发床，但它太小了，我不能把它折叠起来。'
     assert split_cnsubtitle(
-        str6) == '但它有点像这样，然后是小厨房，套间，然后我有\\N一张折叠沙发床，但它太小了，我不能把它折叠起\\N来。但它有点像这样，然后是小厨房，套间，然后\\N我有一张折叠沙发床，但它太小了，我不能把它折叠起来。'
+        str6, 19) == '但它有点像这样，然后是小厨房，套间，然\\N后我有一张折叠沙发床，但它太小了，我不\\N能把它折叠起来。但它有点像这样，然后是\\N小厨房，套间，然后我有一张折叠沙发床，\\N但它太小了，我不能把它折叠起来。'
+    assert split_cnsubtitle(
+        str6, 26) == '但它有点像这样，然后是小厨房，套间，然后我有一\\N张折叠沙发床，但它太小了，我不能把它折叠起来。\\N但它有点像这样，然后是小厨房，套间，然后我有一\\N张折叠沙发床，但它太小了，我不能把它折叠起来。'
+
+    with pytest.raises(Exception) as ex:
+        split_cnsubtitle(str6, 18)
+    assert ex.value.args[0] == '字幕太长，超过5行。请修改'
 
 
 def test_load_srt():

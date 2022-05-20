@@ -4,6 +4,7 @@
 import copy
 import datetime
 import re
+import math
 
 import chardet
 
@@ -482,11 +483,15 @@ def format_ass_time(t_time):
 
 def split_cnsubtitle(str1: str, maxlen=Srt.CHINESE_SUBTITLE_LENGTH) -> str:
     '''
-    拆分ass字幕中长度超过maxlen个字的中文字幕。
+    拆分ass字幕中长度超过maxlen个字的中文字幕，超过后是均分两份，每份字符数 int(总字符数/份数+0.5)。
 
     默认Srt.CHINESE_SUBTITLE_LENGTH，22个字符
 
-    最多拆为3行。
+    最多拆为5行。
+
+    如：字符共23个,按默认22字符拆分，则拆分为2行，然后均分2份，int(23/2+0.5)=12，第一行12个字符，第二行23-12=11个字符。
+
+    如：字符共50个,按默认22字符拆分，则拆分为3行，然后均分int(50/3+0.5)=17，第一二行17个字符，第三行50-17-17=16个字符。
 
     ass以\\N为折行。
 
@@ -496,20 +501,26 @@ def split_cnsubtitle(str1: str, maxlen=Srt.CHINESE_SUBTITLE_LENGTH) -> str:
     Returns:
         拆分结果
     '''
+    if not str1:
+        raise Exception('字符串为空。')
     ret = str1
     strlen = len(str1)
-    splite_count = strlen//maxlen
+    splite_count = math.ceil(strlen/maxlen)
+    splite_len = math.ceil(strlen/splite_count)
     match splite_count:
-        case 0:
-            ret = str1
         case 1:
-            ret = f'{str1[0:maxlen]}\\N{str1[maxlen:]}'
+            ret = str1
         case 2:
-            ret = f'{str1[0:maxlen]}\\N{str1[maxlen:maxlen*2]}\\N{str1[maxlen*2:]}'
+            ret = f'{str1[0:splite_len]}\\N{str1[splite_len:]}'
         case 3:
-            ret = f'{str1[0:maxlen]}\\N{str1[maxlen:maxlen*2]}\\N{str1[maxlen*2:maxlen*3]}\\N{str1[maxlen*3:]}'
+            ret = f'{str1[0:splite_len]}\\N{str1[splite_len:splite_len*2]}\\N{str1[splite_len*2:]}'
+        case 4:
+            ret = f'{str1[0:splite_len]}\\N{str1[splite_len:splite_len*2]}\\N{str1[splite_len*2:splite_len*3]}\\N{str1[splite_len*3:]}'
+        case 5:
+            ret = f'{str1[0:splite_len]}\\N{str1[splite_len:splite_len*2]}\\N{str1[splite_len*2:splite_len*3]}\\N{str1[splite_len*3:splite_len*4]}\\N{str1[splite_len*4:]}'
         case _:
-            ret = f'{str1[0:maxlen]}\\N{str1[maxlen:maxlen*2]}\\N{str1[maxlen*2:maxlen*3]}\\N{str1[maxlen*3:]}'
+            ex = Exception('字幕太长，超过5行。请修改')
+            raise ex
     return ret
 
 

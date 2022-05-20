@@ -1,5 +1,8 @@
-import datetime
-from Srt import merge_ass_tofile, merge_srt_tofile, Srt
+'''
+调用的示例
+
+'''
+from Srt import merge_ass_tofile, Srt
 
 merge_ass_tofile(first_subtitle_fname='z:/tests/a.cn.srt',
                  second_subtitle_fname='z:/tests/a.en.srt',
