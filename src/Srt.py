@@ -527,6 +527,7 @@ def split_cnsubtitle(str1: str, maxlen=Srt.CHINESE_SUBTITLE_LENGTH) -> str:
 def merge_to_ass_str(first_srt_fname='indata/test_cn.srt',
                      second_srt_fname='indata/test_en.srt',
                      ass_template='indata/test_ass_template_cn_en.txt',
+                     ass_head='indata/test_ass_head_cn_en.txt',
                      mark1='@@@@@@@-1', mark2='!!!!!!!-2', mini_time=Srt.MINI_MERGE_TIME, max_cnsubtitle=Srt.CHINESE_SUBTITLE_LENGTH):
     '''
     合并两个srt文件为一个ass文件
@@ -565,6 +566,13 @@ def merge_to_ass_str(first_srt_fname='indata/test_cn.srt',
     unaligne_srts = temp[1]
 
     texts = []
+    ff1 = open(ass_head, 'rb')
+    str1 = ff1.read()
+    ff1.close()
+
+    str1 = detect_code(str1)[0]
+    texts.append(str1)
+
     text = ''
     for item in srts:
         assert isinstance(item, Srt)
@@ -682,6 +690,7 @@ def merge_ass_tofile(first_subtitle_fname='indata/test_cn.srt',
                      new_subtitle_fname='outdata/new_ass_cnen.ass',
                      unalign_subtitle_fname='outdata/new_ass_cnen.unalign.txt',
                      ass_template_fname='indata/test_ass_template_cn_en.txt',
+                     ass_head_fname='indata/test_ass_template_cn_en.txt',
                      mark1='@@@@@@@-1',
                      mark2='!!!!!!!-2', mini_time=Srt.MINI_MERGE_TIME, max_cnsubtitle=Srt.CHINESE_SUBTITLE_LENGTH):
     '''
@@ -698,6 +707,7 @@ def merge_ass_tofile(first_subtitle_fname='indata/test_cn.srt',
             Defaults to 'outdata/new_ass.unalign.txt'.
         ass_template_fname (str, optional): _description_.
         Defaults to 'indata/test_ass_template_cn_en.txt'.
+        ass_head_fname(str,optional):head
         mark1 (str, optional): 标记，标记第一个字幕中未对其的字幕内容。
             Defaults to '@@@@@@@-1'.
         mark2 (str, optional): 标记，标记第二个字幕中未对其的字幕内容。
@@ -709,6 +719,7 @@ def merge_ass_tofile(first_subtitle_fname='indata/test_cn.srt',
     new_subtitle, unalign_subtitle = merge_to_ass_str(first_srt_fname=first_subtitle_fname,
                                                       second_srt_fname=second_subtitle_fname,
                                                       ass_template=ass_template_fname,
+                                                      ass_head=ass_head_fname,
                                                       mark1=mark1, mark2=mark2, mini_time=mini_time, max_cnsubtitle=max_cnsubtitle)
 
     sf1 = open(file=new_subtitle_fname, mode='w',

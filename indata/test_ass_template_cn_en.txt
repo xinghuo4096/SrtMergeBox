@@ -6,8 +6,8 @@ Original Script: {Original_file}
 Script Updated By: {update_name}
 Update Details:{update_detial}
 ScriptType: v4.00+
-PlayResX: 0
-PlayResY: 0
+PlayResX: 384
+PlayResY: 288
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
