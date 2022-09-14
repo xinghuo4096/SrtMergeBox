@@ -9,15 +9,18 @@ def mymian():
     '''
     单个处理
     '''
-    fname = 'z:/tests/test_moveie'
+    fname = 'z:/tests/a/three.thousand.years.of.longing.2022.1080p.web.h264-slot'
 
     merge_ass_tofile(first_subtitle_fname=f'{fname}.cn.srt',
-                     second_subtitle_fname=f'{fname}.en.srt',
+                     second_subtitle_fname=f'{fname}.en.3.srt',
                      new_subtitle_fname=f'{fname}.cnen.ass',
                      unalign_subtitle_fname=f'{fname}.unalgin.txt',
-                     ass_template_fname='indata/test_ass_template_cn_en.txt',
-                     ass_head_fname='indata/ass_head_cn_en.txt',
-                     mark1='', mark2='', mini_time=Srt.MINI_MERGE_TIME, max_cnsubtitle=26)
+                     ass_template_fname='indata/ass_template_cn_en_1280.txt',
+                     ass_head_fname='indata/ass_info_head_cn_en.txt',
+                     mark1='',
+                     mark2='',
+                     mini_time=Srt.MINI_MERGE_TIME,
+                     max_cnsubtitle=26)
 
 
 def mymain_batch():
@@ -26,13 +29,17 @@ def mymain_batch():
     '''
     for i in range(1, 9):
         fname = f'z:/tests/a/test_moveie.S01E{i:0>2}'
-        merge_ass_tofile(first_subtitle_fname=f'{fname}.cn.srt',
-                         second_subtitle_fname=f'{fname}.en.srt',
-                         new_subtitle_fname=f'{fname}.cnen.ass',
-                         unalign_subtitle_fname='{fname}.unalgin.txt',
-                         ass_template_fname='indata/test_ass_template_cn_en.txt',
-                         ass_head_fname='indata/ass_head_cn_en.txt',
-                         mark1='', mark2='', mini_time=Srt.MINI_MERGE_TIME, max_cnsubtitle=26)
+        merge_ass_tofile(
+            first_subtitle_fname=f'{fname}.cn.srt',
+            second_subtitle_fname=f'{fname}.en.srt',
+            new_subtitle_fname=f'{fname}.cnen.ass',
+            unalign_subtitle_fname='{fname}.unalgin.txt',
+            ass_template_fname='indata/test_ass_template_cn_en.txt',
+            ass_head_fname='indata/ass_head_cn_en.txt',
+            mark1='',
+            mark2='',
+            mini_time=Srt.MINI_MERGE_TIME,
+            max_cnsubtitle=26)
 
 
-mymain_batch()
+mymian()
