@@ -9,7 +9,7 @@ def mymian():
     '''
     单个处理
     '''
-    fname = 'z:/tests/a/three.thousand.years.of.longing.2022.1080p.web.h264-slot'
+    fname = 'z:/tests/a/test_moveie'
 
     merge_ass_tofile(first_subtitle_fname=f'{fname}.cn.srt',
                      second_subtitle_fname=f'{fname}.en.3.srt',
