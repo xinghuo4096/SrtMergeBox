@@ -16,7 +16,7 @@ def mymian():
                      new_subtitle_fname=f'{fname}.cnen.ass',
                      unalign_subtitle_fname=f'{fname}.unalgin.txt',
                      ass_template_fname='indata/ass_template_cn_en_1280.txt',
-                     ass_head_fname='indata/ass_info_head_cn_en.txt',
+                     ass_head_fname='indata/ass_info_head_cn_en_1280.txt',
                      mark1='',
                      mark2='',
                      mini_time=Srt.MINI_MERGE_TIME,
