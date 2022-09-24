@@ -11,7 +11,7 @@ PlayResY: 720
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,方正黑体_GBK,67,&H00FFFFFF,&HF0000000,&H00000000,&H32000000,0,0,0,0,100,100,0,0,1,2,1,2,5,5,2,134
+Style: Default,方正黑体_GBK,50,&H00FFFFFF,&HF0000000,&H00000000,&H32000000,0,0,0,0,100,100,0,0,1,2,1,2,5,5,2,134
 
 [Events]
-Dialogue: 0,{start_time},{end_time},*Default,NPC1,0000,0000,0000,,{language1_subtitle_text}\N{\fn微软雅黑}{\b0}{\fs42}{\3c&H202020&}{\shad1}{language2_subtitle_text}
+Dialogue: 0,{start_time},{end_time},*Default,NPC1,0000,0000,0000,,{language1_subtitle_text}\N{\fn微软雅黑}{\b0}{\fs35}{\3c&H202020&}{\shad1}{language2_subtitle_text}
