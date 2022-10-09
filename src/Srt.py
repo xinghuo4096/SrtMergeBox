@@ -69,6 +69,7 @@ def detect_code(detect_str="", confidence=0.51) -> tuple:
 
     Args:
         detect_str (str): byte数组的detect_str
+        confidence 字符编码可信度，设的太高容易出错，默认改为0.51
 
     Raises:
         Exception: _description_
