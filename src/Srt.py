@@ -239,8 +239,8 @@ def clear_after_srt(srt: Srt) -> str:
 
     Returns:
         str: str
-    """
-    srt.text = srt.text.replace("\n", " ")
+    """    
+    return srt.text
 
 
 def load_srt_from_str(str1):
