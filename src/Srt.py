@@ -1,10 +1,11 @@
 """
-    字幕文件Srt使用的类和工具
+字幕文件Srt使用的类和工具
 """
+
 import copy
 import datetime
-import re
 import math
+import re
 
 import chardet
 
@@ -13,6 +14,8 @@ class Srt:
     """
     字幕srt的基本类，包含数据
     """
+
+    SUBTITLE_LANG_SEPARATOR = "<字幕xinghuo4096分隔>"
 
     SEPARATOR = "-->"
     ENCODING = [
@@ -239,7 +242,7 @@ def clear_after_srt(srt: Srt) -> str:
 
     Returns:
         str: str
-    """    
+    """
     return srt.text
 
 
@@ -363,14 +366,6 @@ def merge_srt_tostr(
     first_subtitle = load_srt_fromfile(first_subtitle_fname)
     second_subtitle = load_srt_fromfile(second_subtitle_fname)
 
-    for item in first_subtitle:
-        assert isinstance(item, Srt)
-        item.text = item.text.replace("\n", " ")
-
-    for item in second_subtitle:
-        assert isinstance(item, Srt)
-        item.text = item.text.replace("\n", " ")
-
     assert isinstance(first_subtitle, list)
     assert isinstance(second_subtitle, list)
 
@@ -383,7 +378,7 @@ def merge_srt_tostr(
         ]
         if start_eq_end:
             for item2 in start_eq_end:
-                item.text = item.text + "\n" + item2.text
+                item.text = item.text + Srt.SUBTITLE_LANG_SEPARATOR + item2.text
 
             new_subtitle.append(item)
 
@@ -402,7 +397,7 @@ def merge_srt_tostr(
         ]
         if start_eq_end_noteq:
             for item2 in start_eq_end_noteq:
-                item.text = item.text + "\n" + item2.text
+                item.text = item.text + Srt.SUBTITLE_LANG_SEPARATOR + item2.text
                 if item.end_time < item2.end_time:
                     item.end_time = item2.end_time
             new_subtitle.append(item)
@@ -424,7 +419,7 @@ def merge_srt_tostr(
             is_one_sentence = True
             for item2 in start_eq_end_noteq:
                 if is_one_sentence:
-                    item.text = item.text + "\n" + item2.text
+                    item.text = item.text + Srt.SUBTITLE_LANG_SEPARATOR + item2.text
                     is_one_sentence = False
                 else:
                     item.text = item.text + " " + item2.text
@@ -510,7 +505,7 @@ def format_ass_time(t_time):
     )
 
 
-def split_cnsubtitle(str1: str, maxlen=Srt.CHINESE_SUBTITLE_LENGTH) -> str:
+def split_cnsubtitle(cnstr: str, maxlen=Srt.CHINESE_SUBTITLE_LENGTH) -> str:
     """
     拆分ass字幕中长度超过maxlen个字的中文字幕，超过后是均分两份，每份字符数 int(总字符数/份数+0.5)。
 
@@ -530,27 +525,33 @@ def split_cnsubtitle(str1: str, maxlen=Srt.CHINESE_SUBTITLE_LENGTH) -> str:
     Returns:
         拆分结果
     """
-    if not str1:
+    if not cnstr:
         raise Exception("字符串为空。")
-    ret = str1
-    strlen = len(str1)
-    splite_count = math.ceil(strlen / maxlen)
-    splite_len = math.ceil(strlen / splite_count)
-    match splite_count:
-        case 1:
-            ret = str1
-        case 2:
-            ret = f"{str1[0:splite_len]}\\N{str1[splite_len:]}"
-        case 3:
-            ret = f"{str1[0:splite_len]}\\N{str1[splite_len:splite_len*2]}\\N{str1[splite_len*2:]}"
-        case 4:
-            ret = f"{str1[0:splite_len]}\\N{str1[splite_len:splite_len*2]}\\N{str1[splite_len*2:splite_len*3]}\\N{str1[splite_len*3:]}"
-        case 5:
-            ret = f"{str1[0:splite_len]}\\N{str1[splite_len:splite_len*2]}\\N{str1[splite_len*2:splite_len*3]}\\N{str1[splite_len*3:splite_len*4]}\\N{str1[splite_len*4:]}"
-        case _:
-            ex = Exception("字幕太长，超过5行。请修改")
-            raise ex
-    return ret
+
+    strs = cnstr.split("\n")
+    ret_cn_str = []
+
+    for str1 in strs:
+        ret = str1
+        strlen = len(str1)
+        splite_count = math.ceil(strlen / maxlen)
+        splite_len = math.ceil(strlen / splite_count)
+        match splite_count:
+            case 1:
+                ret = str1
+            case 2:
+                ret = f"{str1[0:splite_len]}\\N{str1[splite_len:]}"
+            case 3:
+                ret = f"{str1[0:splite_len]}\\N{str1[splite_len:splite_len*2]}\\N{str1[splite_len*2:]}"
+            case 4:
+                ret = f"{str1[0:splite_len]}\\N{str1[splite_len:splite_len*2]}\\N{str1[splite_len*2:splite_len*3]}\\N{str1[splite_len*3:]}"
+            case 5:
+                ret = f"{str1[0:splite_len]}\\N{str1[splite_len:splite_len*2]}\\N{str1[splite_len*2:splite_len*3]}\\N{str1[splite_len*3:splite_len*4]}\\N{str1[splite_len*4:]}"
+            case _:
+                ex = Exception("字幕太长，超过5行。请修改")
+                raise ex
+        ret_cn_str.append(ret)
+    return "\\N".join(ret_cn_str)
 
 
 def merge_to_ass_str(
@@ -618,20 +619,24 @@ def merge_to_ass_str(
 
         text = text.replace("{start_time}", format_ass_time(item.start_time))
         text = text.replace("{end_time}", format_ass_time(item.end_time))
-        languages = item.text.split("\n")
+        languages = item.text.split(Srt.SUBTITLE_LANG_SEPARATOR)
         match len(languages):
             case 1:
                 text = text.replace(
                     "{language1_subtitle_text}",
                     split_cnsubtitle(languages[0], max_cnsubtitle),
                 )
+                # 截断后面的内容，不显示第二字幕。
                 text = text[: text.find(r"\N{\fn")]
             case 2:
                 text = text.replace(
                     "{language1_subtitle_text}",
                     split_cnsubtitle(languages[0], max_cnsubtitle),
                 )
-                text = text.replace("{language2_subtitle_text}", languages[1])
+                # 此处第二字幕不换行，全部折成一行。
+                # TODO 可以尝试，如果第二字幕太长，则折成2行。
+                text2 = languages[1].replace("\n", " ")
+                text = text.replace("{language2_subtitle_text}", text2)
             case _:
                 text = text.replace(
                     "{language1_subtitle_text}",
@@ -781,5 +786,5 @@ def merge_ass_tofile(
     sf1 = open(file=new_subtitle_fname, mode="w", buffering=1000, encoding="utf-8")
     sf1.write(new_subtitle)
     sf1.close()
-
-    save_srt(unalign_subtitle_fname, unalign_subtitle)
+    if len(unalign_subtitle):
+        save_srt(unalign_subtitle_fname, unalign_subtitle)
